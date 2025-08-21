@@ -1,3 +1,12 @@
+# 说明
+## done
+1. 已完成数据合成复现
+2. 添加了可选择是否 mod 23 的功能开关
+
+## doing
+1. 添加生成中文数据的功能
+2. 还没想到再做些什么好玩的   
+
 # iGSM
 Welcome to the iGSM synthetic data generator/evaluator, featured in our research paper
 * ["Physics of Language Models: Part 2.1, Grade-School Math and the Hidden Reasoning Process"](https://arxiv.org/abs/2407.20311) and
