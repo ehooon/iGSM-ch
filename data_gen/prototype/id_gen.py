@@ -8,9 +8,11 @@ from const.params import dot
 from math_gen.problem_gen import Problem
 from typing import Optional
 from tools.tools import choose_from_softmax, tokenizer
+from const.params import USE_MOD
 
 class IdGen_PT(object):
-    def __init__(self, style: str, op_style: str, max_op=10, max_edge=15, op=None, perm_level: str=None, detail_level: str=None, be_shortest: bool=True) -> None:
+    def __init__(self, style: str, op_style: str, max_op=10, max_edge=15, op=None, perm_level: str=None, detail_level: str=None, be_shortest: bool=True, use_mod=USE_MOD) -> None: # <-- 添加参数
+        self.use_mod = use_mod # <-- 保存状态     
         self.style = style
         self.op_style = op_style
         self.max_op = max_op
@@ -233,17 +235,16 @@ class IdGen_PT(object):
                     "sol_sort": False, # not important for now.
                     "perm": perm, # make the solution's order different from problem's.
                 }
-                self.problem = Problem(self.d, self.w0, self.w1, self.e, self.p, args=args, be_shortest=self.be_shortest)
+                # 添加 use_mod=self.use_mod 参数
+                self.problem = Problem(self.d, self.w0, self.w1, self.e, self.p, args=args, be_shortest=self.be_shortest, use_mod=self.use_mod)
                 feasible = self.problem.gen(self.n, self.m, self.s)
                 if not feasible:
                     continue
                 self.problem.to_problem()
-                if self.problem.n_op != self.op_ or self.problem.to_hash() not in ava_hash:
-                    # if self.problem.n_op != self.op_:
-                    #     print(f"reject reason: {self.problem.n_op} != {self.op_}")
-                    # else:
-                    #     print("reject reason: not in ava_hash")
-                    continue
+                if self.use_mod:
+                    if self.problem.n_op != self.op_ or self.problem.to_hash() not in ava_hash:
+                        continue
+            
                 break
         else:
             self.problem = problem

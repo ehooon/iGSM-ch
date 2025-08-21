@@ -13,48 +13,52 @@ from heapq import heappush, heappop
 from itertools import count, product
 from typing import List, Dict, Union, Callable, Any
 from const.params import mod, try_num, feasible_symbols
+from const.params import USE_MOD
 
 class Num(object):
-    def __init__(self, a: Union[int, str]=None, mod=mod, mul=False) -> None:
-        self.mod = mod
-        if a == None:
-            if mul:
-                self.a = random.randint(1, self.mod - 1)
+    def __init__(self, a: Union[int, str]=None, mod_val=mod, mul=False, use_mod=USE_MOD) -> None:
+        self.use_mod = use_mod
+        self.mod = mod_val if self.use_mod else None
+        print(f"DEBUG: Num created with value '{a}' and use_mod={self.use_mod}")
+        if a is None:
+            if self.use_mod:
+                # 模运算下的随机数
+                if mul:
+                    self.a = random.randint(1, self.mod - 1)
+                else:
+                    self.a = random.randint(0, self.mod - 1)
             else:
-                self.a = random.randint(0, self.mod - 1)
-        elif isinstance(a, str):
-            self.a = int(a) % self.mod
-        else: self.a = a % self.mod
-    
+                # 标准整数运算下的随机数
+                if mul:
+                    self.a = random.randint(2, 9)
+                else:
+                    self.a = random.randint(1, 9)
+        else:
+            val = int(a)
+            self.a = val % self.mod if self.use_mod else val
+
     def __add__(self, other):
-        if isinstance(other, Num):
-            return Num(self.a + other.a, self.mod)
-        else:
-            return Num(self.a + other, self.mod)
-    
+        other_val = other.a if isinstance(other, Num) else other
+        return Num(self.a + other_val, use_mod=self.use_mod)
+
     def __sub__(self, other):
-        if isinstance(other, Num):
-            return Num(self.a - other.a, self.mod)
-        else:
-            return Num(self.a - other, self.mod)
-    
+        other_val = other.a if isinstance(other, Num) else other
+        return Num(self.a - other_val, use_mod=self.use_mod)
+
     def __mul__(self, other):
-        if isinstance(other, Num):
-            return Num(self.a * other.a, self.mod)
-        else:
-            return Num(self.a * other, self.mod)
-    
+        other_val = other.a if isinstance(other, Num) else other
+        return Num(self.a * other_val, use_mod=self.use_mod)
+
     def __eq__(self, other: Union['Num', int]) -> bool:
-        if isinstance(other, int):
-            return self.a == other
-        else:
-            return self.a == other.a
-    
+        other_val = other.a if isinstance(other, Num) else other
+        return self.a == other_val
+
     def __str__(self) -> str:
         return str(self.a)
 
 class Expression(object):
-    def __init__(self, value: Union[List['Expression'], Num, int]=None, op: str=None, param: tuple=None, set_value: Union[Num, int]=None) -> None:
+    def __init__(self, value: Union[List['Expression'], Num, int]=None, op: str=None, param: tuple=None, set_value: Union[Num, int]=None, use_mod: bool = USE_MOD) -> None:
+        self.use_mod = use_mod     
         '''
         Three cases:
         1. it is a parameter which can be defined by other things: value=list(...), op=..., param=param's code
@@ -169,7 +173,7 @@ class Problem(Graph):
     dot: str
     symbol_method: str
     sol_sort: bool
-    def __init__(self, d, w0, w1, e, p, args: dict, dist: Dict[str, Callable[[], Any]]=None, be_shortest: bool=True) -> None:
+    def __init__(self, d, w0, w1, e, p, args: dict, dist: Dict[str, Callable[[], Any]]=None, be_shortest: bool=True, use_mod: bool = USE_MOD) -> None:
         '''
         Only define_detail=True is verified. When using False case, please print out to see if the output is correct.
 
@@ -184,6 +188,7 @@ class Problem(Graph):
         choose the feasible e closest to the original e.
         '''
         super().__init__(d, w0, w1, e, p, args['perm'], dist=dist)
+        self.use_mod = use_mod
         self.args = args
         for key, val in args.items():
             setattr(self, key, val)

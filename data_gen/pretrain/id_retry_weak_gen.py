@@ -6,14 +6,16 @@
 import random
 from math_gen.problem_gen import Problem
 from tools.tools import tokenizer
-from const.params import retry_key_word
+from const.params import retry_key_word, USE_MOD # <-- 1. 导入 USE_MOD 开关
 from data_gen.prototype.id_gen import IdGen_PT
 
 retry_key_word_token = tokenizer.encode(" " + retry_key_word + ".", return_tensors='pt')[0].tolist()
 
 class IdGen(IdGen_PT):
-    def __init__(self, max_op=10, max_edge=15, op=None, perm_level: str = None, detail_level: str = None, retry_rate: int = 0.02, self_contain=True) -> None:
-        super().__init__('light', 'light', max_op, max_edge, op, perm_level, detail_level)
+    # vvvvvv 2. 修改 __init__ 方法的签名，添加 use_mod 参数 vvvvvv
+    def __init__(self, max_op=10, max_edge=15, op=None, perm_level: str = None, detail_level: str = None, retry_rate: float = 0.02, self_contain=True, use_mod: bool = USE_MOD) -> None:
+        # vvvvvv 3. 在调用 super() 时，将 use_mod 参数传递给父类 vvvvvv
+        super().__init__('light', 'light', max_op, max_edge, op, perm_level, detail_level, use_mod=use_mod)
         self.retry_rate = retry_rate
         self.self_contain = self_contain
     
